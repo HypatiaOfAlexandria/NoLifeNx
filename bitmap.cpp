@@ -39,8 +39,8 @@ namespace nl {
         auto const l = length();
         if (l + 0x20 > bitmap_buf.size())
             bitmap_buf.resize(l + 0x20);
-        ::LZ4_decompress_fast(4 + reinterpret_cast<char const *>(m_data),
-            bitmap_buf.data(), static_cast<int>(l));
+        ::LZ4_decompress_safe(4 + reinterpret_cast<char const *>(m_data),
+            bitmap_buf.data(), static_cast<int>(l), 4 * m_width * m_height);
         return bitmap_buf.data();
     }
     uint16_t bitmap::width() const {
