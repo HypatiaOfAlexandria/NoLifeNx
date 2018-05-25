@@ -44,22 +44,21 @@ bitmap::operator bool() const
 }
 
 std::vector<char> bitmap_buf;
-//! Nullable
 void const* bitmap::data() const
 {
     if (!m_data) {
         return nullptr;
     }
 
-    auto const l = length();
+    const auto l = length();
     if (l + 0x20 > bitmap_buf.size()) {
         bitmap_buf.resize(l + 0x20);
     }
 
     if (::LZ4_decompress_safe(4 + reinterpret_cast<char const*>(m_data),
                               bitmap_buf.data(),
-                              static_cast<int>(l),
-                              static_cast<int>(4 * m_width * m_height)) < 0) {
+                              static_cast<int>(compressed_length()),
+                              static_cast<int>(l)) < 0) {
         return nullptr;
     }
 
@@ -79,6 +78,11 @@ uint16_t bitmap::height() const
 uint32_t bitmap::length() const
 {
     return 4u * m_width * m_height;
+}
+
+uint32_t bitmap::compressed_length() const
+{
+    return *reinterpret_cast<const uint32_t*>(m_data);
 }
 
 size_t bitmap::id() const
