@@ -334,9 +334,7 @@ bool node::get_bool() const
 
 bool node::get_bool(bool def) const
 {
-    return m_data && m_data->type == type::integer
-               ? to_integer() != 0
-               : def;
+    return m_data && m_data->type == type::integer ? to_integer() != 0 : def;
 }
 
 std::int32_t node::x() const
