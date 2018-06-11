@@ -25,13 +25,13 @@
 namespace nl
 {
 struct _file_data;
-typedef std::pair<int32_t, int32_t> vector;
+typedef std::pair<std::int32_t, std::int32_t> vector;
 class node
 {
 public:
     struct data;
     //! Type of node data
-    enum class type : uint16_t {
+    enum class type : std::uint16_t {
         none = 0,
         integer = 1,
         real = 2,
@@ -43,11 +43,11 @@ public:
 
     // Constructors
     node() = default;
-    node(node const&); // Only reason this isn't defaulted is because msvc has
-                       // issues
+    node(node const&); // Only reason this isn't defaulted is because MSVC has
+                       // issues.
     node& operator=(node const&) = default;
     // These methods are primarily so nodes can be used as iterators and
-    // iterated over
+    // iterated over.
     node begin() const;
     node end() const;
     node operator*() const;
@@ -71,8 +71,8 @@ public:
     node operator[](signed long) const;
     node operator[](unsigned long long) const;
     node operator[](signed long long) const;
-    node operator[](std::string const&) const;
-    node operator[](char const*) const;
+    node operator[](std::string_view) const;
+    node operator[](const char*) const;
     //! This method uses the string value of the node, not the node's name
     node operator[](node const&) const;
     // Operators to easily cast a node to get the data
@@ -100,7 +100,7 @@ public:
     // Explicitly called versions of all the operators
     // When it takes a parameter, that is used as the default value
     // if a suitable data value cannot be found in the node
-    int64_t get_integer(int64_t = 0) const;
+    std::int64_t get_integer(std::int64_t = 0) const;
     double get_real(double = 0) const;
     std::string get_string(std::string = "") const;
     vector get_vector(vector = {0, 0}) const;
@@ -109,24 +109,24 @@ public:
     bool get_bool() const;
     bool get_bool(bool) const;
     //! Returns the x coordinate of the vector data value
-    int32_t x() const;
+    std::int32_t x() const;
     //! Returns the y coordinate of the vector data value
-    int32_t y() const;
+    std::int32_t y() const;
     //! The name of the node
     std::string name() const;
     //! The number of children in the node
-    size_t size() const;
+    std::size_t size() const;
     //! Gets the type of data contained within the node
     type data_type() const;
     //! Returns the root node of the file this node was derived from
     node root() const;
     //! Takes a '/' separated string, and resolves the given path
-    node resolve(std::string) const;
+    node resolve(const std::string&) const;
 
 private:
     node(data const*, _file_data const*);
-    node get_child(char const*, uint16_t) const;
-    int64_t to_integer() const;
+    node get_child(std::string_view o) const;
+    std::int64_t to_integer() const;
     double to_real() const;
     std::string to_string() const;
     vector to_vector() const;

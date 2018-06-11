@@ -128,14 +128,14 @@ node node::operator[](signed long long n) const
     return operator[](std::to_string(n));
 }
 
-node node::operator[](std::string const& o) const
+node node::operator[](std::string_view o) const
 {
-    return get_child(o.c_str(), static_cast<uint16_t>(o.length()));
+    return get_child(o);
 }
 
-node node::operator[](char const* o) const
+node node::operator[](const char* o) const
 {
-    return get_child(o, static_cast<uint16_t>(std::strlen(o)));
+    return get_child(o);
 }
 
 node node::operator[](node const& o) const
@@ -200,7 +200,7 @@ node::operator float() const
 
 node::operator double() const
 {
-    return static_cast<double>(get_real());
+    return get_real();
 }
 
 node::operator long double() const
@@ -230,10 +230,10 @@ node::operator audio() const
 
 node::operator bool() const
 {
-    return m_data ? true : false;
+    return m_data != nullptr;
 }
 
-int64_t node::get_integer(int64_t def) const
+std::int64_t node::get_integer(std::int64_t def) const
 {
     if (!m_data) {
         return def;
@@ -248,11 +248,11 @@ int64_t node::get_integer(int64_t def) const
     case type::integer:
         return to_integer();
     case type::real:
-        return static_cast<int64_t>(to_real());
+        return static_cast<std::int64_t>(to_real());
     case type::string:
         return std::stoll(to_string());
     default:
-        throw std::runtime_error("Unknown node type");
+        return def;
     }
 }
 
@@ -275,7 +275,7 @@ double node::get_real(double def) const
     case type::string:
         return std::stod(to_string());
     default:
-        throw std::runtime_error("Unknown node type");
+        return def;
     }
 }
 
@@ -298,7 +298,7 @@ std::string node::get_string(std::string def) const
     case type::string:
         return to_string();
     default:
-        throw std::runtime_error("Unknown node type");
+        return def;
     }
 }
 
@@ -329,23 +329,22 @@ audio node::get_audio() const
 
 bool node::get_bool() const
 {
-    return m_data && m_data->type == type::integer && to_integer() ? true
-                                                                   : false;
+    return m_data && m_data->type == type::integer && to_integer();
 }
 
 bool node::get_bool(bool def) const
 {
     return m_data && m_data->type == type::integer
-               ? to_integer() ? true : false
+               ? to_integer() != 0
                : def;
 }
 
-int32_t node::x() const
+std::int32_t node::x() const
 {
     return m_data && m_data->type == type::vector ? m_data->vector[0] : 0;
 }
 
-int32_t node::y() const
+std::int32_t node::y() const
 {
     return m_data && m_data->type == type::vector ? m_data->vector[1] : 0;
 }
@@ -358,10 +357,10 @@ std::string node::name() const
 
     const auto s = reinterpret_cast<char const*>(m_file->base) +
                    m_file->string_table[m_data->name];
-    return {s + 2, *reinterpret_cast<uint16_t const*>(s)};
+    return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 
-size_t node::size() const
+std::size_t node::size() const
 {
     return m_data ? m_data->num : 0u;
 }
@@ -371,7 +370,7 @@ node::type node::data_type() const
     return m_data ? m_data->type : type::none;
 }
 
-node node::get_child(char const* const o, uint16_t const l) const
+node node::get_child(std::string_view o) const
 {
     if (!m_data) {
         return {nullptr, m_file};
@@ -381,6 +380,7 @@ node node::get_child(char const* const o, uint16_t const l) const
     auto n = m_data->num;
     const auto b = reinterpret_cast<const char*>(m_file->base);
     const auto t = m_file->string_table;
+    const auto l = o.length();
     while (1) {
         if (!n) {
             return {nullptr, m_file};
@@ -389,9 +389,9 @@ node node::get_child(char const* const o, uint16_t const l) const
         const auto n2 = static_cast<decltype(n)>(n >> 1);
         const auto p2 = p + n2;
         const auto sl = b + t[p2->name];
-        const auto l1 = *reinterpret_cast<uint16_t const*>(sl);
-        const auto s = reinterpret_cast<uint8_t const*>(sl + 2);
-        const auto os = reinterpret_cast<uint8_t const*>(o);
+        const auto l1 = *reinterpret_cast<std::uint16_t const*>(sl);
+        const auto s = reinterpret_cast<std::uint8_t const*>(sl + 2);
+        const auto os = reinterpret_cast<std::uint8_t const*>(o.data());
         bool z = false;
         const auto len = l1 < l ? l1 : l;
         for (auto i = 0u; i < len; ++i) {
@@ -419,7 +419,7 @@ node node::get_child(char const* const o, uint16_t const l) const
     }
 }
 
-int64_t node::to_integer() const
+std::int64_t node::to_integer() const
 {
     return m_data->ireal;
 }
@@ -433,10 +433,10 @@ std::string node::to_string() const
 {
     const auto s = reinterpret_cast<char const*>(m_file->base) +
                    m_file->string_table[m_data->string];
-    return {s + 2, *reinterpret_cast<uint16_t const*>(s)};
+    return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 
-std::pair<int32_t, int32_t> node::to_vector() const
+std::pair<std::int32_t, std::int32_t> node::to_vector() const
 {
     return {m_data->vector[0], m_data->vector[1]};
 }
@@ -461,9 +461,9 @@ node node::root() const
     return {m_file->node_table, m_file};
 }
 
-node node::resolve(std::string path) const
+node node::resolve(const std::string& path) const
 {
-    std::istringstream stream(path);
+    std::istringstream stream{path};
     std::vector<std::string> parts;
     std::string segment;
     while (std::getline(stream, segment, '/')) {
