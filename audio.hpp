@@ -33,15 +33,16 @@ public:
     // Comparison operators, useful for containers
     bool operator==(audio const&) const;
     bool operator<(audio const&) const;
-    // Returns whether the audio is valid or merely null
+    //! Returns whether the audio is valid or merely null
     explicit operator bool() const;
-    // Does not do any sort of decompression
-    // Do not free the pointer returned by this method
-    // The pointer remains valid until the file this audio is part of is
-    // destroyed
+    //! Does not do any sort of decompression.
+    //! Do not free the pointer returned by this method.
+    //! The pointer remains valid until the file this audio is part of is
+    //! destroyed.
     void const* data() const;
     uint32_t length() const;
-    // Returns a unique id, useful for keeping track of what audio you loaded
+    //! Returns a unique ID, useful for keeping track of what audio you've
+    //! loaded.
     size_t id() const;
 
 private:
