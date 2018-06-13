@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 // NoLifeNx - Part of the NoLifeStory project                               //
-// Copyright © 2013 Peter Atashian                                          //
+// Copyright ï¿½ 2013 Peter Atashian                                          //
 //                                                                          //
 // This program is free software: you can redistribute it and/or modify     //
 // it under the terms of the GNU Affero General Public License as           //
@@ -21,7 +21,7 @@
 
 namespace nl
 {
-// Internal data structure
+//! Internal data structure.
 #pragma pack(push, 1)
 struct node::data {
     uint32_t const name;

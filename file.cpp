@@ -25,6 +25,8 @@
 #        include <Windows.h>
 #    endif // __MINGW32__
 #else
+#    include <cerrno>
+#    include <cstring>
 #    include <sys/fcntl.h>
 #    include <sys/mman.h>
 #    include <sys/stat.h>
@@ -32,6 +34,10 @@
 #    include <unistd.h>
 #endif
 #include <stdexcept>
+
+#ifndef NDEBUG
+#    include <iostream>
+#endif
 
 namespace nl
 {
@@ -49,6 +55,7 @@ void file::open(std::string name)
 {
     close();
     m_data = new data();
+
 #ifdef _WIN32
     m_data->file_handle = ::CreateFileA(name.c_str(),
                                         GENERIC_READ,
@@ -69,22 +76,38 @@ void file::open(std::string name)
         throw std::runtime_error("Failed to map view of file " + name);
 #else
     m_data->file_handle = ::open(name.c_str(), O_RDONLY);
-    if (m_data->file_handle == -1)
-        throw std::runtime_error("Failed to open file " + name);
+    if (m_data->file_handle == -1) {
+        throw std::runtime_error("Failed to open file " + name +
+                                 ", errno: " + std::strerror(errno));
+    }
+
     struct stat finfo;
-    if (::fstat(m_data->file_handle, &finfo) == -1)
+    if (::fstat(m_data->file_handle, &finfo) == -1) {
         throw std::runtime_error("Failed to obtain file information of file " +
-                                 name);
+                                 name + ", errno: " + std::strerror(errno));
+    }
+
     m_data->size = finfo.st_size;
     m_data->base = ::mmap(
         nullptr, m_data->size, PROT_READ, MAP_SHARED, m_data->file_handle, 0);
-    if (reinterpret_cast<intptr_t>(m_data->base) == -1)
+    if (m_data->base == MAP_FAILED) {
         throw std::runtime_error("Failed to create memory mapping of file " +
-                                 name);
+                                 name + ", errno: " + std::strerror(errno));
+    }
+
+#    ifndef NDEBUG
+    std::cout << "=== File " << name << " mapped to address " << m_data->base
+              << " ===\n";
+#    endif
+
 #endif
+
     m_data->header = reinterpret_cast<header const*>(m_data->base);
-    if (m_data->header->magic != 0x34474B50)
-        throw std::runtime_error(name + " is not a PKG4 NX file");
+    if (m_data->header->magic != 0x34474B50) {
+        throw std::runtime_error(name + " is not a PKG4 NX file (incorrect "
+                                        "magic)");
+    }
+
     m_data->node_table = reinterpret_cast<node::data const*>(
         reinterpret_cast<char const*>(m_data->base) +
         m_data->header->node_offset);
@@ -101,8 +124,10 @@ void file::open(std::string name)
 
 void file::close()
 {
-    if (!m_data)
+    if (!m_data) {
         return;
+    }
+
 #ifdef _WIN32
     ::UnmapViewOfFile(m_data->base);
     ::CloseHandle(m_data->map);
@@ -111,6 +136,7 @@ void file::close()
     ::munmap(const_cast<void*>(m_data->base), m_data->size);
     ::close(m_data->file_handle);
 #endif
+
     delete m_data;
     m_data = nullptr;
 }
@@ -125,30 +151,30 @@ file::operator node() const
     return root();
 }
 
-uint32_t file::string_count() const
+std::uint32_t file::string_count() const
 {
     return m_data->header->string_count;
 }
 
-uint32_t file::bitmap_count() const
+std::uint32_t file::bitmap_count() const
 {
     return m_data->header->bitmap_count;
 }
 
-uint32_t file::audio_count() const
+std::uint32_t file::audio_count() const
 {
     return m_data->header->audio_count;
 }
 
-uint32_t file::node_count() const
+std::uint32_t file::node_count() const
 {
     return m_data->header->node_count;
 }
 
-std::string file::get_string(uint32_t i) const
+std::string file::get_string(std::uint32_t i) const
 {
-    const auto s =
+    auto s =
         reinterpret_cast<char const*>(m_data->base) + m_data->string_table[i];
-    return {s + 2, *reinterpret_cast<uint16_t const*>(s)};
+    return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 } // namespace nl

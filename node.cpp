@@ -26,6 +26,10 @@
 #include <stdexcept>
 #include <vector>
 
+#ifndef NDEBUG
+#    include <iostream>
+#endif
+
 namespace nl
 {
 node::node(node const& o) : m_data(o.m_data), m_file(o.m_file)
@@ -353,14 +357,14 @@ std::string node::name() const
         return {};
     }
 
-    const auto s = reinterpret_cast<char const*>(m_file->base) +
-                   m_file->string_table[m_data->name];
+    auto s = reinterpret_cast<char const*>(m_file->base) +
+             m_file->string_table[m_data->name];
     return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 
 std::size_t node::size() const
 {
-    return m_data ? m_data->num : 0u;
+    return m_data ? m_data->num : 0ull;
 }
 
 node::type node::data_type() const
@@ -441,10 +445,23 @@ std::pair<std::int32_t, std::int32_t> node::to_vector() const
 
 bitmap node::to_bitmap() const
 {
+#ifndef NDEBUG
+    auto bitmap_offset = m_file->bitmap_table[m_data->bitmap.index];
+    if (bitmap_offset % 8 != 0) {
+        std::cerr << "[NX format error] Bitmap in file mapped to "
+                  << m_file->base << " is at offset " << bitmap_offset
+                  << ", which is not a multiple of 8\n";
+    }
+
+    return {reinterpret_cast<char const*>(m_file->base) + bitmap_offset,
+            m_data->bitmap.width,
+            m_data->bitmap.height};
+#else
     return {reinterpret_cast<char const*>(m_file->base) +
                 m_file->bitmap_table[m_data->bitmap.index],
             m_data->bitmap.width,
             m_data->bitmap.height};
+#endif
 }
 
 audio node::to_audio() const

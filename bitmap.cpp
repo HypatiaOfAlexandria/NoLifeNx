@@ -23,7 +23,7 @@
 
 namespace nl
 {
-bitmap::bitmap(void const* d, uint16_t w, uint16_t h)
+bitmap::bitmap(void const* d, std::uint16_t w, std::uint16_t h)
     : m_data(d), m_width(w), m_height(h)
 {
 }
@@ -40,7 +40,7 @@ bool bitmap::operator==(bitmap const& o) const
 
 bitmap::operator bool() const
 {
-    return m_data ? true : false;
+    return m_data != nullptr;
 }
 
 std::vector<char> bitmap_buf;
@@ -50,12 +50,12 @@ void const* bitmap::data() const
         return nullptr;
     }
 
-    const auto l = length();
+    auto l = length();
     if (l + 0x20 > bitmap_buf.size()) {
         bitmap_buf.resize(l + 0x20);
     }
 
-    if (::LZ4_decompress_safe(4 + reinterpret_cast<char const*>(m_data),
+    if (::LZ4_decompress_safe(reinterpret_cast<char const*>(m_data) + 4,
                               bitmap_buf.data(),
                               static_cast<int>(compressed_length()),
                               static_cast<int>(l)) < 0) {
@@ -65,28 +65,28 @@ void const* bitmap::data() const
     return bitmap_buf.data();
 }
 
-uint16_t bitmap::width() const
+std::uint16_t bitmap::width() const
 {
     return m_width;
 }
 
-uint16_t bitmap::height() const
+std::uint16_t bitmap::height() const
 {
     return m_height;
 }
 
-uint32_t bitmap::length() const
+std::uint32_t bitmap::length() const
 {
     return 4u * m_width * m_height;
 }
 
-uint32_t bitmap::compressed_length() const
+std::uint32_t bitmap::compressed_length() const
 {
-    return *reinterpret_cast<const uint32_t*>(m_data);
+    return *reinterpret_cast<const std::uint32_t*>(m_data);
 }
 
-size_t bitmap::id() const
+std::size_t bitmap::id() const
 {
-    return reinterpret_cast<size_t>(m_data);
+    return reinterpret_cast<std::size_t>(m_data);
 }
 } // namespace nl

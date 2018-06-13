@@ -35,8 +35,10 @@ bool exists(std::string name)
 }
 node add_file(std::string name)
 {
-    if (!exists(name))
+    if (!exists(name)) {
         return {};
+    }
+
     files.emplace_back(new file(name));
     return *files.back();
 }
