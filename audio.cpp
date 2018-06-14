@@ -20,31 +20,37 @@
 
 namespace nl
 {
-audio::audio(void const* d, uint32_t l) : m_data(d), m_length(l)
+audio::audio(void const* d, std::uint32_t l) : m_data(d), m_length(l)
 {
 }
+
 bool audio::operator<(audio const& o) const
 {
     return m_data < o.m_data;
 }
+
 bool audio::operator==(audio const& o) const
 {
     return m_data == o.m_data;
 }
+
 audio::operator bool() const
 {
-    return m_data ? true : false;
+    return m_data != nullptr;
 }
+
 void const* audio::data() const
 {
     return m_data;
 }
-uint32_t audio::length() const
+
+std::uint32_t audio::length() const
 {
     return m_length;
 }
-size_t audio::id() const
+
+std::size_t audio::id() const
 {
-    return reinterpret_cast<size_t>(m_data);
+    return reinterpret_cast<std::size_t>(m_data);
 }
 } // namespace nl

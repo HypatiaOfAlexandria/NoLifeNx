@@ -40,15 +40,15 @@ public:
     //! The pointer remains valid until the file this audio is part of is
     //! destroyed.
     void const* data() const;
-    uint32_t length() const;
+    std::uint32_t length() const;
     //! Returns a unique ID, useful for keeping track of what audio you've
     //! loaded.
-    size_t id() const;
+    std::size_t id() const;
 
 private:
-    audio(void const*, uint32_t);
+    audio(void const*, std::uint32_t);
     void const* m_data = nullptr;
-    uint32_t m_length = 0;
+    std::uint32_t m_length = 0;
     friend node;
 };
 } // namespace nl
