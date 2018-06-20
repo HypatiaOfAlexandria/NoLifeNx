@@ -102,34 +102,42 @@ std::string operator+(node n, char const* s)
     return n.get_string() + s;
 }
 
-node node::operator[](unsigned int n) const
+node node::operator[](std::uint16_t n) const
 {
     return operator[](std::to_string(n));
 }
 
-node node::operator[](signed int n) const
+node node::operator[](std::int16_t n) const
 {
     return operator[](std::to_string(n));
 }
 
-node node::operator[](unsigned long n) const
+node node::operator[](std::uint32_t n) const
 {
     return operator[](std::to_string(n));
 }
 
-node node::operator[](signed long n) const
+node node::operator[](std::int32_t n) const
 {
     return operator[](std::to_string(n));
 }
 
-node node::operator[](unsigned long long n) const
+node node::operator[](std::uint64_t n) const
 {
-    return operator[](std::to_string(n));
+    // 64-bit integers in string form have the possibility of not getting SSO,
+    // so to ensure that no allocations occur we use `snprintf()`.
+    char buf[21];
+    auto len = std::snprintf(buf, 21, "%lu", n);
+    return operator[](std::string_view{buf, len});
 }
 
-node node::operator[](signed long long n) const
+node node::operator[](std::int64_t n) const
 {
-    return operator[](std::to_string(n));
+    // 64-bit integers in string form have the possibility of not getting SSO,
+    // so to ensure that no allocations occur we use `snprintf()`.
+    char buf[21];
+    auto len = std::snprintf(buf, 21, "%ld", n);
+    return operator[](std::string_view{buf, len});
 }
 
 node node::operator[](std::string_view o) const

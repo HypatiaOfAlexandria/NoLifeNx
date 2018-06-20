@@ -20,6 +20,7 @@
 #include "nxfwd.hpp"
 
 #include <cstdint>
+#include <cstdio>
 #include <string>
 
 namespace nl
@@ -66,12 +67,12 @@ public:
     // Note that the versions taking integers convert the integer to a string.
     // They do not access the children by their integer index.
     // If you wish to do that, use `some_node.begin() + integer_index`.
-    node operator[](unsigned int) const;
-    node operator[](signed int) const;
-    node operator[](unsigned long) const;
-    node operator[](signed long) const;
-    node operator[](unsigned long long) const;
-    node operator[](signed long long) const;
+    node operator[](std::uint16_t) const;
+    node operator[](std::int16_t) const;
+    node operator[](std::uint32_t) const;
+    node operator[](std::int32_t) const;
+    node operator[](std::uint64_t) const;
+    node operator[](std::int64_t) const;
     node operator[](std::string_view) const;
     node operator[](const char*) const;
     //! This method uses the string value of the node, not the node's name
