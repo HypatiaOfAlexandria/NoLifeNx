@@ -29,6 +29,8 @@ class bitmap
 public:
     bitmap() = default;
     bitmap(bitmap const&) = default;
+    bitmap(void const*, uint16_t, uint16_t);
+
     bitmap& operator=(bitmap const&) = default;
     // Comparison operators, useful for containers
     bool operator==(bitmap const&) const;
@@ -39,7 +41,7 @@ public:
     //! Do not free the pointer returned by this method.
     //! Every time this function is called, any previous pointers returned
     //! by this method become invalid.
-    //! As such, this function is very _not_ threadsafe.
+    //! As such, this function is very *not* threadsafe.
     //!
     //! Nullable
     void const* data() const;
@@ -53,7 +55,6 @@ public:
     size_t id() const;
 
 private:
-    bitmap(void const*, uint16_t, uint16_t);
     void const* m_data = nullptr;
     uint16_t m_width = 0;
     uint16_t m_height = 0;
