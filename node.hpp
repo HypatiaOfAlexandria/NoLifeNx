@@ -122,8 +122,8 @@ public:
     type data_type() const;
     //! Returns the root node of the file this node was derived from.
     node root() const;
-    //! Takes a '/' separated string, and resolves the given path.
-    node resolve(const std::string&) const;
+    //! Takes a '/' separated string view, and resolves the given path.
+    node resolve(std::string_view) const noexcept;
 
 private:
     node(data const*, _file_data const*);

@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-
 #pragma once
 #include "nxfwd.hpp"
 
-namespace nl
-{
-namespace nx
+namespace nl::nx
 {
 //! Pre-defined nodes to access standard MapleStory-style data.
 //! Make sure you called `load_all()` first.
@@ -31,5 +28,4 @@ extern node base, character, effect, etc, item, map, mob, morph, npc, quest,
 //! MapleStory.
 //! Only call this function once.
 void load_all();
-} // namespace nx
-} // namespace nl
+} // namespace nl::nx

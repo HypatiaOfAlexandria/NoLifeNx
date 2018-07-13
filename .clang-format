@@ -35,7 +35,7 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
-BreakBeforeBinaryOperators: None
+BreakBeforeBinaryOperators: true
 BreakBeforeBraces: Linux
 BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true
@@ -89,8 +89,7 @@ PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerAlignment: Left
 RawStringFormats:
-  - Delimiter: pb
-    Language: TextProto
+  - Language: TextProto
     BasedOnStyle: google
 ReflowComments: true
 SortIncludes: true

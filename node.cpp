@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License //
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
-
 #include "audio.hpp"
 #include "bitmap.hpp"
 #include "file_impl.hpp"
@@ -324,8 +323,8 @@ vector node::get_vector(vector def) const
 
 bitmap node::get_bitmap() const
 {
-    if (m_data && m_data->type == type::bitmap &&
-        m_file->header->bitmap_count) {
+    if (m_data && m_data->type == type::bitmap
+        && m_file->header->bitmap_count) {
         return to_bitmap();
     }
     return {nullptr, 0, 0};
@@ -365,8 +364,8 @@ std::string node::name() const
         return {};
     }
 
-    auto s = reinterpret_cast<char const*>(m_file->base) +
-             m_file->string_table[m_data->name];
+    auto s = reinterpret_cast<char const*>(m_file->base)
+             + m_file->string_table[m_data->name];
     return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 
@@ -441,8 +440,8 @@ double node::to_real() const
 
 std::string node::to_string() const
 {
-    const auto s = reinterpret_cast<char const*>(m_file->base) +
-                   m_file->string_table[m_data->string];
+    const auto s = reinterpret_cast<char const*>(m_file->base)
+                   + m_file->string_table[m_data->string];
     return {s + 2, *reinterpret_cast<std::uint16_t const*>(s)};
 }
 
@@ -465,8 +464,8 @@ bitmap node::to_bitmap() const
             m_data->bitmap.width,
             m_data->bitmap.height};
 #else
-    return {reinterpret_cast<char const*>(m_file->base) +
-                m_file->bitmap_table[m_data->bitmap.index],
+    return {reinterpret_cast<char const*>(m_file->base)
+                + m_file->bitmap_table[m_data->bitmap.index],
             m_data->bitmap.width,
             m_data->bitmap.height};
 #endif
@@ -474,8 +473,8 @@ bitmap node::to_bitmap() const
 
 audio node::to_audio() const
 {
-    return {reinterpret_cast<char const*>(m_file->base) +
-                m_file->audio_table[m_data->audio.index],
+    return {reinterpret_cast<char const*>(m_file->base)
+                + m_file->audio_table[m_data->audio.index],
             m_data->audio.length};
 }
 
@@ -484,19 +483,22 @@ node node::root() const
     return {m_file->node_table, m_file};
 }
 
-node node::resolve(const std::string& path) const
+node node::resolve(std::string_view path) const noexcept
 {
-    std::istringstream stream{path};
-    std::vector<std::string> parts;
-    std::string segment;
-    while (std::getline(stream, segment, '/')) {
-        parts.push_back(segment);
-    }
+    std::size_t i = 0;
+    std::size_t last_i = 0;
+    node n = *this;
+    while (i < path.length()) {
+        if (path[i] == '/') {
+            n = n[path.substr(last_i, i - last_i)];
 
-    auto n = *this;
-    for (const auto& part : parts) {
-        n = n[part];
+            ++i;
+            last_i = i;
+        } else {
+            ++i;
+        }
     }
+    n = n[path.substr(last_i, i - last_i)];
 
     return n;
 }
