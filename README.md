@@ -2,6 +2,9 @@
 
 A C++17 library that can read NX files.
 
+Originally authored by retep998 and licensed (along with other NoLifeStory
+software) under the GNU AGPL v3+.
+
 ## Dependencies
 
 None.
